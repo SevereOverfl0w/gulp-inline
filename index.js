@@ -126,11 +126,25 @@ function inject($, process, base, cb, opts, relative) {
 module.exports = function(opts) {
   opts = opts || {};
   opts.base = opts.base || '';
+  
+  if(opts.enabled === undefined){
+    opts.enabled = ['css', 'js', 'svg', 'img']
+  }
 
   return through.obj(function(file, enc, cb) {
     var self = this;
     var $ = cheerio.load(String(file.contents), {decodeEntities: false});
     var typeKeys = Object.getOwnPropertyNames(typeMap);
+    
+    var results = [];
+    for (var i = 0; i < typeKeys.length; i++) {
+        if (opts.enabled.indexOf(typeKeys[i]) !== -1) {
+            results.push(typeKeys[i]);
+        }
+    }
+    
+    typeKeys = results;
+    
     var done = after(typeKeys.length, function() {
       file.contents = new Buffer($.html());
       self.push(file);
